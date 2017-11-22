@@ -1,10 +1,13 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 # 21-11-2017, Alisher A. Khassanov for Airalab, alisher@aira.life
 # http response with rosbag file content
 
-import os
+
 import sys
+if sys.version_info[0] > 2:
+    raise ImportError('Only python2 supported due to rosbag demands')
+import os
 import json
 from datetime import date, timedelta
 from flask import Flask
@@ -56,9 +59,8 @@ if __name__ == '__main__':
     try:
         path = os.path.abspath(sys.argv[1])
     except IndexError as e:
-        sys.stderr.write('ERROR: root path not specified. Usage: "$ ./httpbag.py <PATH>"')
-        exit()
+        e.message = 'ERROR: root path not specified. Usage: "$ ./httpbag.py <PATH>"'
+        raise
     if not os.path.exists(path):
-        sys.stderr.write('ERROR: path ' + path + ' not found')
-        exit()
+        raise RuntimeError('ERROR: path ' + path + ' not exist')
     app.run()
