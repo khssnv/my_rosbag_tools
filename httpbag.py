@@ -1,18 +1,13 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # 21-11-2017, Alisher A. Khassanov for Airalab, alisher@aira.life
 # http response with rosbag file content
 
 
-import sys
-if sys.version_info[0] > 2:
-    raise ImportError('Only python2 supported due to rosbag demands')
-import os
-import json
 from datetime import date, timedelta
 from flask import Flask
 from flask import request
-import rosbag
+import rosbag, json, os
 
 app = Flask(__name__)
 
@@ -37,30 +32,14 @@ def str_to_dates(ds): # dates string
 @app.route('/')
 def main():
     """
-    Expected bag files path: <PATH>/<yyyy>/<mm>/<dd>/<hh>.bag
+    Expected bag files like 2017-12-13-14-24-38.bag
     """
-    dates = str_to_dates(request.args.get('date'))
-    get_days = lambda d1, d2: [d1 + timedelta(days=x) for x in range((d2-d1).days + 1)]
-    days = get_days(dates[0], dates[1])
-    paths = []
-    for d in days:
-        p = path + '/' + str(d.year) + '/' + str(d.month) + '/' + str(d.day)
-        if os.path.exists(p): # if directory exists
-            for h in range(1, 25):
-                pp = p + '/' + str(h) + '.bag'
-                if os.path.isfile(pp): # if file exists
-                    paths.append(pp)
-    content = ''
-    for p in paths:
-        content = content + bag_to_str(p)
-    return content
+    d1, d2 = str_to_dates(request.args.get('date'))
+    days = [ d1 + timedelta(days=x) for x in range((d2 - d1).days + 1) ]
+    paths = [ '{0}-{1}-{2}-{3}-{4}-{5}.bag'.format(d.year, d.month, d.day, h, m, s)
+                for d in days for h in range(0, 24) for m in range(0, 60) for s in range(0, 60) ]
+    content = [ bag_to_str(p) for p in paths if os.path.isfile(p) ]
+    return ''.join(content)
 
 if __name__ == '__main__':
-    try:
-        path = os.path.abspath(sys.argv[1])
-    except IndexError as e:
-        e.message = 'ERROR: root path not specified. Usage: "$ ./httpbag.py <PATH>"'
-        raise
-    if not os.path.exists(path):
-        raise RuntimeError('ERROR: path ' + path + ' not exist')
-    app.run()
+    app.run(host='0.0.0.0', port=30000)
