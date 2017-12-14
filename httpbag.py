@@ -29,7 +29,7 @@ def main(bag_from, bag_to):
     d2 = parse(bag_to)
     days = [d1 + timedelta(days=x) for x in range((d2-d1).days + 1)]
     paths = [ '{0}-{1}-{2}-{3}-{4}-{5}.bag'.format(d.year, d.month, d.day, h, m, s)
-                for d in days for h in range(0, 25) for m in range(0, 60) for s in range(0, 60) ]
+                for d in days for h in range(24) for m in range(60) for s in range(60) ]
     content = [ read_messages(p) for p in paths if os.path.isfile(p) ]
     return jsonify(sum(content, []))
 
