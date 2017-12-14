@@ -24,14 +24,6 @@ def bag_to_str(path):
     bag.close()
     return out
 
-def str_to_dates(ds): # dates string
-    """
-    Expected URL example: http://.../?date=18.11.2017+11%3A15+-+21.11.2017+11%3A15
-    """
-    since = date(int(ds[6:10]), int(ds[3:5]), int(ds[0:2])) # (yy, mm, dd)
-    until = date(int(ds[25:29]), int(ds[22:24]), int(ds[19:21]))
-    return [since, until]
-
 @app.route('/api/v0/bag/<bag_from>/<bag_to>')
 def main(bag_from, bag_to):
     """
@@ -41,7 +33,7 @@ def main(bag_from, bag_to):
     d2 = parse(bag_to)
     days = [d1 + timedelta(days=x) for x in range((d2-d1).days + 1)]
     paths = [ '{0}-{1}-{2}-{3}-{4}-{5}.bag'.format(d.year, d.month, d.day, h, m, s)
-                for d in days for h in range(0, 25) for m in range(0, 60) for s in range(0, 60) ]
+                for d in days for h in range(24) for m in range(60) for s in range(60) ]
     content = [ bag_to_str(p) for p in paths if os.path.isfile(p) ]
     return ''.join(content)
 
